@@ -1,0 +1,20 @@
+// Route + API path constants.
+export const ROUTES = {
+  home: "/",
+  login: "/login",
+  register: "/register",
+  products: "/products",
+  cart: "/cart",
+} as const;
+
+export const API = {
+  authRegister: "/api/auth/register",
+  authLogin: "/api/auth/login",
+  authLogout: "/api/auth/logout",
+  products: "/api/products",
+  favorites: "/api/favorites",
+  cart: "/api/cart",
+  cartItem: (productId: string) => `/api/cart/${productId}`,
+  orders: "/api/orders",
+  testSeed: "/api/test/seed",
+} as const;
