@@ -18,19 +18,21 @@ shapes, schema, seeds).
 ## Setup
 
 ```bash
-npm install       # install dependencies
-npm run db:reset  # create ./data/app.db, tables, and the base catalog
-npm run dev       # start the app on http://localhost:3000
+npm install                    # install dependencies
+npx playwright install chromium # one-time: download the test browser
+npm run db:reset               # create ./data/app.db, tables, and the base catalog
+npm run dev                    # start the app on http://localhost:3000
 ```
 
 ## Running e2e tests
 
 ```bash
-npm run e2e       # run Playwright tests (headless)
+npm run e2e       # run Playwright tests (headless) — auto-starts the app on port 3100
 npm run e2e:ui    # Playwright UI mode
 ```
 
-The Playwright config runs the app on port 3100 for tests.
+The Playwright config starts the app on port 3100 for tests (reuses a running one if present).
+Each spec resets its data through a granular seed before it runs — see `SEED-MAP.md`.
 
 ## How seeds work
 

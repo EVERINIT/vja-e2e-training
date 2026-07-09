@@ -1,45 +1,89 @@
-# Seed Map (stub)
+# SEED-MAP — the seed ↔ test connection
 
-Maps each e2e spec to the seed it runs in `beforeEach` and the testids it targets.
-The seeds agent finalizes the seed scripts; this table mirrors CONTRACT §7.
+This is the student-facing map between each e2e spec and the seed that
+puts the database into the exact state that spec needs. Every spec calls
+its seed in `beforeEach`, so tests are deterministic and independent.
 
-| spec | seed | testids |
+## How it wires together
+
+- Seeds live in `backend/seeds/scripts/*.ts` and are registered in
+  `backend/seeds/registry.ts` (name → function).
+- A spec calls `await seed('<name>')` (the `seed` fixture in
+  `e2e/fixtures/test.ts`), which POSTs to `/api/test/seed` with `{ name }`.
+- The endpoint runs `seedRegistry[name]()` on the running app's DB.
+- App and tests both run on `http://localhost:3100` (CONTRACT §7).
+
+## Test → seed map (CONTRACT §7)
+
+| spec file | seed | key testids |
 |---|---|---|
-| `tests/auth/register.spec.ts` | `reset-users` | `register-form`, `email-error`, `password-error` |
-| `tests/auth/login.spec.ts` | `user-registered` | `login-form`, `login-error` |
-| `tests/products/product-list.spec.ts` | `catalog-default` | `product-list`, `product-card` |
-| `tests/products/favorites.spec.ts` | `user-no-favorites` | `favorite-btn` |
-| `tests/products/category-filter.spec.ts` | `catalog-default` | `category-filter`, `category-option-*` |
-| `tests/products/price-filter.spec.ts` | `catalog-default` | `price-filter`, `price-min-input`, `price-max-input` |
-| `tests/products/search.spec.ts` | `catalog-search-match` | `search-input`, `no-results-message` |
-| `tests/products/clear-filters.spec.ts` | `catalog-default` | `clear-filters-btn` |
-| `tests/cart/add-to-cart.spec.ts` | `user-empty-cart` | `add-to-cart-btn`, `cart-count` |
-| `tests/cart/remove-from-cart.spec.ts` | `user-cart-has-items` | `remove-cart-item-btn` |
-| `tests/cart/checkout.spec.ts` | `user-cart-has-items` | `checkout-btn`, `order-success-message` |
-| `tests/cart/empty-checkout.spec.ts` | `user-empty-cart` | `checkout-btn` (-> error) |
+| `tests/auth/register.spec.ts` | `reset-users` | register-form, email-error, password-error |
+| `tests/auth/login.spec.ts` | `user-registered` | login-form, login-error |
+| `tests/products/product-list.spec.ts` | `catalog-default` | product-list, product-card |
+| `tests/products/favorites.spec.ts` | `user-no-favorites` | favorite-btn |
+| `tests/products/category-filter.spec.ts` | `catalog-default` | category-filter, category-option-* |
+| `tests/products/price-filter.spec.ts` | `catalog-default` | price-filter, price-min-input, price-max-input |
+| `tests/products/search.spec.ts` | `catalog-search-match` | search-input, no-results-message |
+| `tests/products/clear-filters.spec.ts` | `catalog-default` | clear-filters-btn |
+| `tests/cart/add-to-cart.spec.ts` | `user-empty-cart` | add-to-cart-btn, cart-count |
+| `tests/cart/remove-from-cart.spec.ts` | `user-cart-has-items` | remove-cart-item-btn |
+| `tests/cart/checkout.spec.ts` | `user-cart-has-items` | checkout-btn, order-success-message |
+| `tests/cart/empty-checkout.spec.ts` | `user-empty-cart` | checkout-btn (→ error) |
 
-## Seed catalog
+## Seeds (CONTRACT §6) — what each guarantees
 
-| seed name | guarantees |
+Every seed first resets the tables it owns, then `ensureCatalog()`
+(4 categories + 24 products, idempotent), then sets exactly its state.
+
+| seed | guarantees |
 |---|---|
 | `base` | reset everything, ensure catalog, no users |
-| `reset-users` | catalog present, users/favorites/cart/orders empty |
-| `user-registered` | catalog + e2e user exists, empty cart/favorites |
-| `user-empty-cart` | e2e user, catalog, cart empty, favorites empty |
-| `user-cart-has-items` | e2e user, catalog, cart has 2 known products, favorites empty |
-| `user-no-favorites` | e2e user, catalog, favorites empty |
-| `user-has-favorites` | e2e user, catalog, 1 known product favorited |
-| `catalog-default` | e2e user, full catalog, clean filters state |
-| `catalog-search-match` | e2e user, catalog with a product named for search test |
-| `catalog-no-match` | e2e user, catalog (for search-yields-nothing test) |
+| `reset-users` | catalog present; users/favorites/cart/orders empty |
+| `user-registered` | catalog + e2e user exists; empty cart/favorites |
+| `user-empty-cart` | e2e user; catalog; cart empty; favorites empty |
+| `user-cart-has-items` | e2e user; cart holds the 2 known products; favorites empty |
+| `user-no-favorites` | e2e user; catalog; favorites empty |
+| `user-has-favorites` | e2e user; catalog; 1 known product already favorited |
+| `catalog-default` | e2e user; full catalog; clean filter state |
+| `catalog-search-match` | e2e user; catalog guaranteed to contain the search-test product |
+| `catalog-no-match` | e2e user; catalog (for search-yields-nothing / no-results) |
 
-Known e2e user: email `e2e@test.com`, password `123456`, name `E2E User`.
+## Deterministic fixture data
 
-## Adding a new test + seed pair
+Exported from `backend/seeds/e2e-fixtures.ts` — rely on these exact values.
 
-1. Add a seed script `backend/seeds/scripts/<name>.ts` exporting `seed<Name>()`; it must call
-   `resetTables()` for the tables it owns, then set exactly the state it names
-   (`ensureCatalog()` for catalog).
-2. Register it in `backend/seeds/registry.ts` (`<name>: seed<Name>`).
-3. Add the spec under `e2e/tests/...` with `beforeEach(async ({ seed }) => seed('<name>'))`.
-4. Document the pair in the table above.
+- **e2e user** (`E2E_USER`) — email `e2e@test.com`, password `123456`, name `E2E User`.
+- **Cart seed products** (`CART_SEED_PRODUCT_IDS`) — `p-elec-2` (Wireless
+  Headphones), `p-book-1` (Mystery Novel).
+- **Favorite seed product** (`FAVORITE_SEED_PRODUCT_ID`) — `p-elec-1` (Gaming Laptop).
+- **Search match** (`SEARCH_MATCH_PRODUCT_ID` = `p-elec-1`, `SEARCH_MATCH_TERM` =
+  `Laptop`) — searching `Laptop` matches "Gaming Laptop".
+- **Search no-match** (`SEARCH_NO_MATCH_TERM` = `zzzznomatch`) — yields zero results.
+
+Product catalog (source of truth): `backend/seeds/catalog.ts` — 24 products,
+ids like `p-elec-1`, `p-cloth-3`, `p-book-5`, `p-home-2`; prices ~11..1199.
+
+## How to add a new test + seed pair
+
+1. **Pick the exact state** your test needs (who is logged in, what's in the
+   cart/favorites, which products must exist).
+2. **Add a seed script** `backend/seeds/scripts/<name>.ts` exporting one fn
+   `seed<Name>()`. First reset the tables it owns (`clearUsers()` or
+   `resetTables([...])`), then `ensureCatalog()`, then set exactly that state
+   using `createUser`, `addCartItem`, `addFavorite`. Keep it tiny and single-concern.
+3. **Reuse deterministic ids** from `e2e-fixtures.ts` (add a new exported const
+   there if your test needs a specific product), so the spec can assert on them.
+4. **Register it** in `backend/seeds/registry.ts`: `"<name>": seed<Name>`.
+5. **Verify** it runs: `npx tsx backend/seeds/run.ts <name>`.
+6. **Add the spec** under `e2e/tests/...`, import `{ test, expect }` from the
+   fixtures, `beforeEach(async ({ seed }) => { await seed('<name>') })`, and a
+   top comment naming the seed, fixture data, and testids.
+7. **Update the tables** in this file.
+
+## Running
+
+- Seeds (CLI): `npx tsx backend/seeds/run.ts <name>`
+- e2e list: `npx playwright test --list -c e2e/playwright.config.ts`
+- e2e run:  `npx playwright test -c e2e/playwright.config.ts`
+  (the `npm run e2e` script is bare `playwright test`; it needs the
+  `-c e2e/playwright.config.ts` flag to find this config.)

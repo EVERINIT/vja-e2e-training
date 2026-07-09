@@ -38,6 +38,7 @@ export const TESTIDS = {
   removeCartItemBtn: "remove-cart-item-btn",
   checkoutBtn: "checkout-btn",
   orderSuccessMessage: "order-success-message",
+  cartError: "cart-error",
 } as const;
 
 export type TestId = (typeof TESTIDS)[keyof typeof TESTIDS];
