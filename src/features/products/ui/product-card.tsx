@@ -11,7 +11,9 @@ import { cn } from "@/lib/utils";
 import { TESTIDS } from "@/shared/testids";
 import { PRODUCT_CONFIG } from "../product-config";
 import { productFormatPrice } from "../lib/product-format-price";
+import { productBadge, productCompareAtPrice } from "../lib/product-badges";
 import type { ProductCategory, ProductItem } from "../product-types";
+import { ProductRatingStars } from "./product-rating-stars";
 
 interface ProductCardProps {
   product: ProductItem;
@@ -20,9 +22,30 @@ interface ProductCardProps {
   onToggleFavorite: (productId: string) => void;
 }
 
+// Cosmetic pill badge classes per kind.
+const BADGE_STYLES: Record<string, string> = {
+  new: "bg-emerald-500 text-white",
+  trending: "bg-primary text-primary-foreground",
+  sale: "bg-rose-500 text-white",
+};
+
 export function ProductCard({ product, category, isFavorite, onToggleFavorite }: ProductCardProps) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+
+  const badge = productBadge(product.id);
+  const badgeLabel =
+    badge?.kind === "new"
+      ? PRODUCT_CONFIG.badges.new
+      : badge?.kind === "trending"
+        ? PRODUCT_CONFIG.badges.trending
+        : badge?.kind === "sale"
+          ? `-${badge.discountPercent}%`
+          : null;
+  const compareAtPrice =
+    badge?.kind === "sale" && badge.discountPercent
+      ? productCompareAtPrice(product.price, badge.discountPercent)
+      : null;
 
   async function handleAddToCart() {
     setBusy(true);
@@ -43,12 +66,31 @@ export function ProductCard({ product, category, isFavorite, onToggleFavorite }:
     <Card
       data-testid={TESTIDS.productCard}
       data-product-id={product.id}
-      className="group gap-0 overflow-hidden py-0 transition-all hover:-translate-y-0.5 hover:shadow-md"
+      className="group gap-0 overflow-hidden py-0 transition-all hover:-translate-y-1 hover:shadow-lg"
     >
-      <Box className="relative flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-accent/70 to-muted">
-        <span className="text-6xl transition-transform duration-300 group-hover:scale-110" aria-hidden>
+      <Box className="relative aspect-square overflow-hidden bg-muted">
+        <img
+          src={product.imageUrl}
+          alt={product.name}
+          loading="lazy"
+          className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        {/* Emoji fallback kept subtle behind the photo. */}
+        <span className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center text-6xl opacity-40" aria-hidden>
           {product.image}
         </span>
+
+        {badgeLabel && (
+          <span
+            className={cn(
+              "absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm",
+              badge && BADGE_STYLES[badge.kind]
+            )}
+          >
+            {badgeLabel}
+          </span>
+        )}
+
         <Button
           variant="outline"
           size="icon"
@@ -59,22 +101,30 @@ export function ProductCard({ product, category, isFavorite, onToggleFavorite }:
           aria-label={PRODUCT_CONFIG.text.favorite}
           onClick={() => onToggleFavorite(product.id)}
           className={cn(
-            "absolute right-3 top-3 size-9 rounded-full bg-background/90 backdrop-blur",
-            isFavorite && "border-primary/40 text-primary"
+            "absolute right-3 top-3 size-9 rounded-full border-transparent bg-background/90 shadow-sm backdrop-blur hover:bg-background",
+            isFavorite && "text-rose-500"
           )}
         >
-          <Heart className={cn("size-4", isFavorite && "fill-primary")} />
+          <Heart className={cn("size-4", isFavorite && "fill-rose-500")} />
         </Button>
       </Box>
 
-      <CardContent className="space-y-3 p-4">
-        <Box className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-semibold leading-snug text-foreground">{product.name}</h3>
-          <Badge variant="muted">{category?.name ?? product.categoryId}</Badge>
+      <CardContent className="space-y-2.5 p-4">
+        <Badge variant="muted" className="uppercase tracking-wide">
+          {category?.name ?? product.categoryId}
+        </Badge>
+        <h3 className="text-sm font-semibold leading-snug text-foreground">{product.name}</h3>
+        <ProductRatingStars productId={product.id} />
+        <Box className="flex items-baseline gap-2">
+          <p className="text-xl font-bold tracking-tight text-foreground">
+            {productFormatPrice(product.price)}
+          </p>
+          {compareAtPrice && (
+            <p className="text-sm font-medium text-muted-foreground line-through">
+              {productFormatPrice(compareAtPrice)}
+            </p>
+          )}
         </Box>
-        <p className="text-xl font-bold tracking-tight text-foreground">
-          {productFormatPrice(product.price)}
-        </p>
       </CardContent>
 
       <CardFooter className="p-4 pt-0">

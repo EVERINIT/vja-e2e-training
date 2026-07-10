@@ -83,8 +83,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </main>
 
         <footer className="border-t border-border/70 py-6">
-          <Container className="text-center text-xs text-muted-foreground">
-            VJA Store, a demo storefront for practicing Playwright e2e tests.
+          <Container className="flex flex-col items-center gap-3 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between">
+            <span>VJA Store, a demo storefront for practicing Playwright e2e tests.</span>
+            <nav className="flex items-center gap-4">
+              <Link href={ROUTES.products} className="transition-colors hover:text-foreground">
+                Products
+              </Link>
+              {/* Cosmetic demo pages; literal paths since src/shared/routes.ts is off-limits. */}
+              <Link href="/checkout" className="transition-colors hover:text-foreground">
+                Checkout preview
+              </Link>
+              <Link href="/orders" className="transition-colors hover:text-foreground">
+                Orders
+              </Link>
+            </nav>
           </Container>
         </footer>
       </body>

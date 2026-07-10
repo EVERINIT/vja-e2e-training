@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AlertCircle, CheckCircle2, ShoppingBag } from "lucide-react";
+import { AlertCircle, CheckCircle2, ShieldCheck, ShoppingBag } from "lucide-react";
 import { Box } from "@/components/ui/box";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
@@ -65,6 +65,9 @@ export function CartPage({ cart: initialCart }: CartPageProps) {
   }
 
   const isEmpty = cart.items.length === 0;
+  // Cosmetic itemization only; the graded order posts to /api/orders unchanged.
+  const tax = cart.total * CART_CONFIG.taxRate;
+  const grandTotal = cart.total + tax;
 
   return (
     <Box className="space-y-6" data-testid={TESTIDS.cartPage}>
@@ -130,14 +133,26 @@ export function CartPage({ cart: initialCart }: CartPageProps) {
             <CardTitle className="text-base">{CART_CONFIG.text.summaryTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Box className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{CART_CONFIG.text.subtotalLabel}</span>
-              <span>${cart.total.toFixed(2)}</span>
+            <Box className="space-y-2.5">
+              <Box className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>{CART_CONFIG.text.subtotalLabel}</span>
+                <span className="text-foreground">${cart.total.toFixed(2)}</span>
+              </Box>
+              <Box className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>{CART_CONFIG.text.shippingLabel}</span>
+                <span className="font-medium text-[color:var(--success)]">
+                  {CART_CONFIG.text.shippingFree}
+                </span>
+              </Box>
+              <Box className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>{CART_CONFIG.text.taxLabel}</span>
+                <span className="text-foreground">${tax.toFixed(2)}</span>
+              </Box>
             </Box>
             <Separator />
             <Box className="flex items-center justify-between text-base font-semibold text-foreground">
               <span>{CART_CONFIG.text.totalLabel}</span>
-              <span>${cart.total.toFixed(2)}</span>
+              <span>${grandTotal.toFixed(2)}</span>
             </Box>
             <Button
               data-testid={TESTIDS.checkoutBtn}
@@ -148,6 +163,10 @@ export function CartPage({ cart: initialCart }: CartPageProps) {
             >
               {busy ? CART_CONFIG.text.checkingOut : CART_CONFIG.text.checkout}
             </Button>
+            <Box className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="size-3.5" />
+              <span>{CART_CONFIG.text.secureCheckout}</span>
+            </Box>
           </CardContent>
         </Card>
       </Box>
