@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowLeft, CreditCard, MapPin, ShieldCheck, User } from "lucide-react";
+import { getSessionUser } from "@backend/session";
+import { ROUTES } from "@/shared/routes";
 import { Box } from "@/components/ui/box";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +19,11 @@ const P = CART_CONFIG.preview;
 const CART_PATH = "/cart";
 
 // Cosmetic, non-functional checkout preview. The graded order flow lives on /cart.
-export default function CheckoutPreviewPage() {
+// Still a protected route: logged-out visitors are redirected to login.
+export default async function CheckoutPreviewPage() {
+  const user = await getSessionUser();
+  if (!user) redirect(ROUTES.login);
+
   const sample = CATALOG_PRODUCTS.slice(0, 3);
   const subtotal = sample.reduce((sum, p) => sum + p.price, 0);
   const tax = subtotal * CART_CONFIG.taxRate;

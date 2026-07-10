@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CheckCircle2, Package } from "lucide-react";
+import { getSessionUser } from "@backend/session";
+import { ROUTES } from "@/shared/routes";
 import { Box } from "@/components/ui/box";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +22,11 @@ const DEMO_ORDERS = [
   { id: "ORD-1852", date: "May 30, 2026", productIds: ["p-elec-5"] },
 ];
 
-export default function OrdersPreviewPage() {
+// Cosmetic order-history preview, but still a protected route.
+export default async function OrdersPreviewPage() {
+  const user = await getSessionUser();
+  if (!user) redirect(ROUTES.login);
+
   const byId = new Map(CATALOG_PRODUCTS.map((p) => [p.id, p]));
 
   return (
