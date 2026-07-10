@@ -72,7 +72,9 @@ export function ProductList({ products, categories, brands, colors, favoriteIds 
   }
 
   function handleToggleFavorite(productId: string) {
-    // Optimistic toggle, then reconcile with the server response.
+    // Optimistic toggle, then reconcile with the server response. Revert on failure
+    // so the heart never lies about the persisted state.
+    const snapshot = favorites;
     setFavorites((prev) => {
       const next = new Set(prev);
       next.has(productId) ? next.delete(productId) : next.add(productId);
@@ -82,12 +84,16 @@ export function ProductList({ products, categories, brands, colors, favoriteIds 
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId }),
-    }).then(async (res) => {
-      if (res.ok) {
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          setFavorites(new Set(snapshot));
+          return;
+        }
         const data = (await res.json()) as { productIds: string[] };
         setFavorites(new Set(data.productIds));
-      }
-    });
+      })
+      .catch(() => setFavorites(new Set(snapshot)));
   }
 
   function handleClearFilters() {
