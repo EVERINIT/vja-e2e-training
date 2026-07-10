@@ -15,3 +15,4 @@ e2e/tests/_verify.spec.ts
 e2e/tests/_shots.spec.ts
 e2e/tests/_console.spec.ts
 e2e/tests/_shot-orders.spec.ts
+e2e/tests/_contact.spec.ts
