@@ -22,6 +22,7 @@ export const products = sqliteTable("products", {
     .notNull()
     .references(() => categories.id),
   image: text("image").notNull(),
+  imageUrl: text("image_url").notNull(),
   description: text("description").notNull(),
 });
 

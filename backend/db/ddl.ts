@@ -22,6 +22,7 @@ const CREATE_STATEMENTS = [
     price REAL NOT NULL,
     category_id TEXT NOT NULL REFERENCES categories(id),
     image TEXT NOT NULL,
+    image_url TEXT NOT NULL,
     description TEXT NOT NULL
   )`,
   `CREATE TABLE IF NOT EXISTS favorites (

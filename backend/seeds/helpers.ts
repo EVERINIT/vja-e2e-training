@@ -46,7 +46,11 @@ export function ensureCatalog(): void {
     db.insert(categories).values(c).onConflictDoNothing().run();
   }
   for (const p of PRODUCTS) {
-    db.insert(products).values(p).onConflictDoNothing().run();
+    // Real product photo saved locally under public/products/<id>.jpg.
+    db.insert(products)
+      .values({ ...p, imageUrl: `/products/${p.id}.jpg` })
+      .onConflictDoNothing()
+      .run();
   }
 }
 
