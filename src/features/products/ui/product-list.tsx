@@ -27,6 +27,8 @@ interface ProductListProps {
   brands: string[];
   colors: string[];
   favoriteIds: string[];
+  // Optional pre-selected category from a `?category=` deep-link.
+  initialCategory?: string;
 }
 
 const INITIAL_STATE: ProductFilterState = {
@@ -49,9 +51,19 @@ function toggleValue(list: string[], value: string): string[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
 
-export function ProductList({ products, categories, brands, colors, favoriteIds }: ProductListProps) {
+export function ProductList({
+  products,
+  categories,
+  brands,
+  colors,
+  favoriteIds,
+  initialCategory,
+}: ProductListProps) {
   // Client-side filtering over the full catalog for instant updates (per requirement).
-  const [filters, setFilters] = useState<ProductFilterState>(INITIAL_STATE);
+  const [filters, setFilters] = useState<ProductFilterState>(() => ({
+    ...INITIAL_STATE,
+    category: initialCategory ?? INITIAL_STATE.category,
+  }));
   const [favorites, setFavorites] = useState<Set<string>>(new Set(favoriteIds));
 
   const categoryById = useMemo(

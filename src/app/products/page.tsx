@@ -14,8 +14,14 @@ import { getFavoriteProductIds } from "@backend/services/favorites-service";
 import { PRODUCT_CONFIG } from "@/features/products/product-config";
 import { ProductList } from "@/features/products/ui/product-list";
 
+interface ProductsPageProps {
+  // Next 15 passes searchParams as a promise. `?category=<id>` deep-links from the
+  // home category tiles and pre-selects that filter.
+  searchParams: Promise<{ category?: string }>;
+}
+
 // Server component: products are visible only after login.
-export default async function ProductsPage() {
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const user = await getSessionUser();
   if (!user) redirect(ROUTES.login);
 
@@ -24,6 +30,13 @@ export default async function ProductsPage() {
   const brands = listBrands();
   const colors = listColors();
   const favoriteIds = getFavoriteProductIds(user.id);
+
+  // Honor a valid ?category= deep-link; ignore anything not a real category id.
+  const { category } = await searchParams;
+  const initialCategory =
+    category && categories.some((c) => c.id === category)
+      ? category
+      : PRODUCT_CONFIG.categoryAllValue;
 
   return (
     <Box className="space-y-8">
@@ -37,6 +50,7 @@ export default async function ProductsPage() {
         brands={brands}
         colors={colors}
         favoriteIds={favoriteIds}
+        initialCategory={initialCategory}
       />
     </Box>
   );
