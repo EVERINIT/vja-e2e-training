@@ -30,6 +30,15 @@ export class DuplicateEmailError extends Error {
   }
 }
 
+// better-sqlite3 raises a UNIQUE constraint failure as an Error with
+// code "SQLITE_CONSTRAINT_UNIQUE" (message also contains "UNIQUE constraint failed").
+function isUniqueViolation(err: unknown): boolean {
+  if (typeof err !== "object" || err === null) return false;
+  const code = (err as { code?: string }).code;
+  const message = (err as { message?: string }).message ?? "";
+  return code === "SQLITE_CONSTRAINT_UNIQUE" || message.includes("UNIQUE constraint failed");
+}
+
 // Insert a new user. Throws DuplicateEmailError on existing email.
 // better-sqlite3 is synchronous, so this stays a plain sync function.
 export function registerUser({ name, email, password }: RegisterUserInput): AuthPublicUser {
@@ -37,15 +46,23 @@ export function registerUser({ name, email, password }: RegisterUserInput): Auth
   if (existing) throw new DuplicateEmailError();
 
   const id = randomUUID();
-  db.insert(users)
-    .values({
-      id,
-      name,
-      email,
-      passwordHash: hashPassword(password),
-      createdAt: new Date().toISOString(),
-    })
-    .run();
+  try {
+    db.insert(users)
+      .values({
+        id,
+        name,
+        email,
+        passwordHash: hashPassword(password),
+        createdAt: new Date().toISOString(),
+      })
+      .run();
+  } catch (err) {
+    // The email UNIQUE constraint is the real guard; the select above can race it.
+    // Map the raw SQLite constraint error to our typed one so the route answers 409,
+    // not 500.
+    if (isUniqueViolation(err)) throw new DuplicateEmailError();
+    throw err;
+  }
 
   return { id, name, email };
 }
