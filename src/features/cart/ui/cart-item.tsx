@@ -19,8 +19,13 @@ export function CartItem({ line, onRemove }: CartItemProps) {
   return (
     <Box className="flex items-center justify-between gap-4 border-b border-border py-4 last:border-b-0">
       <Box className="flex items-center gap-4">
-        <span className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-accent/70 text-3xl">
-          {product.image}
+        <span className="relative flex size-16 shrink-0 overflow-hidden rounded-lg bg-muted">
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            loading="lazy"
+            className="size-full object-cover"
+          />
         </span>
         <Box className="space-y-0.5">
           <Text className="font-medium text-foreground">{product.name}</Text>

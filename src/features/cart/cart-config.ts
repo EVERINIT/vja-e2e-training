@@ -3,6 +3,8 @@ import { API } from "@/shared/routes";
 // All cart/checkout text + api paths. No bare text in components.
 export const CART_CONFIG = {
   heading: "Your Cart",
+  // Cosmetic derived tax rate for the order summary. Does not affect the graded order total.
+  taxRate: 0.08,
   text: {
     subtitle: "Review your items and place your order.",
     empty: "Your cart is empty.",
@@ -11,7 +13,12 @@ export const CART_CONFIG = {
     itemsTitle: "Items",
     summaryTitle: "Order summary",
     subtotalLabel: "Subtotal",
+    shippingLabel: "Shipping",
+    shippingFree: "Free",
+    taxLabel: "Tax (8%)",
     totalLabel: "Total",
+    secureCheckout: "Secure checkout, encrypted end to end.",
+    freeShippingNote: "Free shipping on every order.",
     qtyLabel: "Qty",
     remove: "Remove",
     checkout: "Checkout",
@@ -20,6 +27,34 @@ export const CART_CONFIG = {
     success: "Order placed successfully!",
     emptyCartError: "Your cart is empty. Add items before checking out.",
     genericError: "Something went wrong. Please try again.",
+  },
+  // Copy for the cosmetic, non-functional /checkout and /orders demo pages.
+  preview: {
+    checkoutBadge: "Preview",
+    checkoutTitle: "Checkout",
+    checkoutSubtitle:
+      "A static preview of a multi-step checkout. Not wired up. The graded order is placed from the cart page.",
+    contactTitle: "Contact",
+    contactEmail: "Email address",
+    contactPhone: "Phone number",
+    shippingTitle: "Shipping address",
+    shippingName: "Full name",
+    shippingAddress: "Street address",
+    shippingCity: "City",
+    shippingZip: "ZIP / Postal code",
+    paymentTitle: "Payment",
+    paymentCard: "Card number",
+    paymentExpiry: "Expiry (MM/YY)",
+    paymentCvc: "CVC",
+    summaryTitle: "Order summary",
+    placeOrder: "Place order",
+    disabledNote: "Demo only, this button is intentionally inert.",
+    backToCart: "Back to cart",
+    ordersTitle: "Order history",
+    ordersSubtitle: "A static preview of past orders. Not connected to your real orders.",
+    ordersItemsLabel: "items",
+    ordersStatus: "Delivered",
+    ordersReorder: "Buy again",
   },
   api: {
     cart: API.cart,
