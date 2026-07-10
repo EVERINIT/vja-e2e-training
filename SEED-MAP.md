@@ -22,6 +22,7 @@ its seed in `beforeEach`, so tests are deterministic and independent.
 | `tests/products/product-list.spec.ts` | `catalog-default` | product-list, product-card |
 | `tests/products/favorites.spec.ts` | `user-no-favorites` | favorite-btn |
 | `tests/products/category-filter.spec.ts` | `catalog-default` | category-filter, category-option-* |
+| `tests/products/category-deep-link.spec.ts` | `catalog-default` | results-count, product-card (via `/products?category=<id>`) |
 | `tests/products/price-filter.spec.ts` | `catalog-default` | price-filter, price-min-input, price-max-input |
 | `tests/products/search.spec.ts` | `catalog-search-match` | search-input, no-results-message |
 | `tests/products/clear-filters.spec.ts` | `catalog-default` | clear-filters-btn |
