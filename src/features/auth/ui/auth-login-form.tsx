@@ -55,7 +55,7 @@ export function AuthLoginForm() {
   }
 
   return (
-    <form data-testid={TESTIDS.loginForm} onSubmit={handleSubmit} className="space-y-4">
+    <form data-testid={TESTIDS.loginForm} onSubmit={handleSubmit} noValidate className="space-y-4">
       <Box className="space-y-1.5">
         <Label htmlFor="login-email">{CFG.emailLabel}</Label>
         <Input

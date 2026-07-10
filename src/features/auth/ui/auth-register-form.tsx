@@ -61,7 +61,7 @@ export function AuthRegisterForm() {
   }
 
   return (
-    <form data-testid={TESTIDS.registerForm} onSubmit={handleSubmit} className="space-y-4">
+    <form data-testid={TESTIDS.registerForm} onSubmit={handleSubmit} noValidate className="space-y-4">
       <Box className="space-y-1.5">
         <Label htmlFor="register-name">{CFG.nameLabel}</Label>
         <Input
