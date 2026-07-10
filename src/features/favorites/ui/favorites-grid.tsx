@@ -24,29 +24,40 @@ export function FavoritesGrid({ products, categories, favoriteIds }: FavoritesGr
   );
 
   async function handleToggleFavorite(productId: string) {
-    // Optimistic toggle, then reconcile with the server response (mirrors ProductList).
+    // Optimistic toggle, then reconcile with the server (mirrors ProductList).
+    const snapshot = favorites;
     setFavorites((prev) => {
       const next = new Set(prev);
       next.has(productId) ? next.delete(productId) : next.add(productId);
       return next;
     });
-    const res = await fetch(PRODUCT_CONFIG.api.favorites, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch(PRODUCT_CONFIG.api.favorites, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId }),
+      });
+      if (!res.ok) {
+        setFavorites(new Set(snapshot));
+        return;
+      }
       const data = (await res.json()) as { productIds: string[] };
       setFavorites(new Set(data.productIds));
+    } catch {
+      setFavorites(new Set(snapshot));
     }
   }
+
+  // On the favorites page, show only the products that are still favorited, so
+  // unfavoriting removes the card immediately instead of waiting for a reload.
+  const visible = products.filter((product) => favorites.has(product.id));
 
   return (
     <Box
       data-testid={TESTIDS.favoritesList}
       className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
     >
-      {products.map((product) => (
+      {visible.map((product) => (
         <ProductCard
           key={product.id}
           product={product}
